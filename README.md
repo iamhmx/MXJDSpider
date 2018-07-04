@@ -19,3 +19,4 @@ cd MXJDSpider
 python jd_spider.py
 ```
 ## 效果
+![](https://github.com/iamhmx/MXJDSpider/blob/master/screenshots/result.png?raw=true)
