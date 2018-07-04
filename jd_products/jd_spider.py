@@ -5,10 +5,11 @@ from selenium.webdriver.common.by import By
 from selenium.webdriver.support import expected_conditions as EC
 from pyquery import PyQuery as pq
 from bs4 import BeautifulSoup
+from settings import *
 
 
 class Spider(object):
-    def __init__(self, host, keyword):
+    def __init__(self, host=HOST, keyword=KEYWORD):
         self.host = host
         self.keyword = keyword
         self.options = webdriver.ChromeOptions()
@@ -76,5 +77,5 @@ class Spider(object):
 
 
 if __name__ == '__main__':
-    spider = Spider('https://www.jd.com/', '手机')
+    spider = Spider()
     spider.start()
