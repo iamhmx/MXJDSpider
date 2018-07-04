@@ -6,6 +6,8 @@ from selenium.webdriver.support import expected_conditions as EC
 from pyquery import PyQuery as pq
 from bs4 import BeautifulSoup
 from settings import *
+from pymongo import MongoClient
+import re
 
 
 class Spider(object):
@@ -17,9 +19,13 @@ class Spider(object):
         self.driver = webdriver.Chrome(chrome_options=self.options)
         self.driver.set_window_size(1400, 900)
         self.wait = WebDriverWait(self.driver, timeout=15)
+        # MongoDB，默认链接本地
+        self.client = MongoClient(host=MONGODB_URL, port=MONGODB_PORT)
+        self.db = self.client[MONGODB_DB]
 
     def __del__(self):
         self.driver.close()
+        self.client.close()
 
     def start(self):
         print('正在驱动浏览器...')
@@ -57,6 +63,9 @@ class Spider(object):
         soup = BeautifulSoup(html, 'lxml')
         items = soup.find_all('div', attrs={'class': 'gl-i-wrap'})
         for item in items:
+            # 通过调转的链接获取pid
+            search_str = item.find('div', attrs={'class': 'p-img'}).find('a').attrs['onclick']
+            pid = re.compile('searchlog\(.*?,(.*?),.*?\)', re.S).search(search_str).group(1)
             img_element = item.find('div', attrs={'class': 'p-img'}).find('a').find('img')
             img = img_element.attrs.get('src', None)
             if img is None:
@@ -65,15 +74,42 @@ class Spider(object):
             title = item.find('div', attrs={'class': 'p-name'}).find('a').find('em').get_text()
             commit = item.find('div', attrs={'class': 'p-commit'}).find('strong').get_text().replace('\n', '')[:-3]
             shop = item.find('div', attrs={'class': 'p-shop'}).find('a').get_text()
-            self.print_product(title, img, price, commit, shop)
+            product = {
+                'pid': pid,
+                'img': 'http:' + img,
+                'price': price,
+                'title': title,
+                'commit': commit,
+                'shop': shop
+            }
+            self.print_product(product)
             print('='*50)
+            self.save_to_mongo(product)
 
-    def print_product(self, title, img, price, commit, shop):
-        print('名称：', title)
-        print('图片：', 'http:' + img)
-        print('价格：', price)
-        print('评论数：', commit)
-        print('店铺：', shop)
+    def save_to_mongo(self, product):
+        # 使用KEYWORD作为表明
+        search_product = self.db[KEYWORD].find_one({'pid': product['pid']})
+        if search_product is None:
+            print('未找到该数据，插入该条数拒')
+            self.db[KEYWORD].insert(product)
+        else:
+            print('已有该条数据，更新该数据')
+            self.db[KEYWORD].update_one({'pid': product['pid']}, {'$set': {
+                'pid': product['pid'],
+                'img': product['img'],
+                'price': product['price'],
+                'title': product['title'],
+                'commit': product['commit'],
+                'shop': product['shop']
+            }})
+
+    def print_product(self, product):
+        print('id：', product.get('pid', None))
+        print('名称：', product.get('title', None))
+        print('图片：', 'http:' + product['img'])
+        print('价格：', product.get('price', None))
+        print('评论数：', product.get('commit', None))
+        print('店铺：', product.get('shop', None))
 
 
 if __name__ == '__main__':
