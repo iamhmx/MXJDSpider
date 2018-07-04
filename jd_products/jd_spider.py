@@ -62,7 +62,7 @@ class Spider(object):
                 img = img_element.attrs['data-lazy-img']
             price = item.find('div', attrs={'class': 'p-price'}).find('strong').get_text()
             title = item.find('div', attrs={'class': 'p-name'}).find('a').find('em').get_text()
-            commit = item.find('div', attrs={'class': 'p-commit'}).get_text().replace('\n', '')
+            commit = item.find('div', attrs={'class': 'p-commit'}).find('strong').get_text().replace('\n', '')[:-3]
             shop = item.find('div', attrs={'class': 'p-shop'}).find('a').get_text()
             self.print_product(title, img, price, commit, shop)
             print('='*50)
