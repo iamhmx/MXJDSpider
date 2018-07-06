@@ -59,21 +59,60 @@ class Spider(object):
         self.get_product()
 
     def get_product(self):
-        html = self.driver.page_source
-        soup = BeautifulSoup(html, 'lxml')
-        items = soup.find_all('div', attrs={'class': 'gl-i-wrap'})
-        for item in items:
-            # 通过调转的链接获取pid
-            search_str = item.find('div', attrs={'class': 'p-img'}).find('a').attrs['onclick']
+        # BeautifulSoup
+        # html = self.driver.page_source
+        # soup = BeautifulSoup(html, 'lxml')
+        # items = soup.find_all('div', attrs={'class': 'gl-i-wrap'})
+        # for item in items:
+        #     # 通过调转的链接获取pid
+        #     search_str = item.find('div', attrs={'class': 'p-img'}).find('a').attrs['onclick']
+        #     pid = re.compile('searchlog\(.*?,(.*?),.*?\)', re.S).search(search_str).group(1)
+        #     img_element = item.find('div', attrs={'class': 'p-img'}).find('a').find('img')
+        #     img = img_element.attrs.get('src', None)
+        #     if img is None:
+        #         img = img_element.attrs['data-lazy-img']
+        #     price = item.find('div', attrs={'class': 'p-price'}).find('strong').get_text()
+        #     title = item.find('div', attrs={'class': 'p-name'}).find('a').find('em').get_text()
+        #     commit = item.find('div', attrs={'class': 'p-commit'}).find('strong').get_text().replace('\n', '')[:-3]
+        #     shop = item.find('div', attrs={'class': 'p-shop'}).find('a').get_text()
+        #     product = {
+        #         'pid': pid,
+        #         'img': 'http:' + img,
+        #         'price': price,
+        #         'title': title,
+        #         'commit': commit,
+        #         'shop': shop
+        #     }
+        #     self.print_product(product)
+        #     print('='*50)
+        #     self.save_to_mongo(product)
+
+        # # ===============================================
+        # # pyquery use page_source but not work ? ? ?
+        # html = self.driver.page_source
+        # doc = pq(html)
+        # for item in doc('.gl-i-wrap').items():
+        #     price = item('.p-price strong i').text()
+        #     print('price:', price)
+        # # ===============================================
+
+        # pyquery use current_url work well
+        doc = pq(url=self.driver.current_url, encoding="utf-8")
+        for item in doc('.gl-i-wrap').items():
+            search_str = item('.p-img a').attr('onclick')
             pid = re.compile('searchlog\(.*?,(.*?),.*?\)', re.S).search(search_str).group(1)
-            img_element = item.find('div', attrs={'class': 'p-img'}).find('a').find('img')
-            img = img_element.attrs.get('src', None)
+            img = item('.p-img a img').attr('src')
             if img is None:
-                img = img_element.attrs['data-lazy-img']
-            price = item.find('div', attrs={'class': 'p-price'}).find('strong').get_text()
-            title = item.find('div', attrs={'class': 'p-name'}).find('a').find('em').get_text()
-            commit = item.find('div', attrs={'class': 'p-commit'}).find('strong').get_text().replace('\n', '')[:-3]
-            shop = item.find('div', attrs={'class': 'p-shop'}).find('a').get_text()
+                img = item('.p-img a img').attr('data-lazy-img')
+            if img is None:
+                img = item('.p-img a img').attr('source-data-lazy-img')
+            price = item('.p-price strong').text()
+            title = item('.p-name.p-name-type-2 a em').text().replace('\n', '')
+            commit = item('.p-commit strong').text().replace('\n', '')[:-3]
+            shop = item('.p-shop span a').text()
+            if shop is None or len(shop) == 0:
+                # shop有可能取不到
+                pass
             product = {
                 'pid': pid,
                 'img': 'http:' + img,
@@ -106,7 +145,7 @@ class Spider(object):
     def print_product(self, product):
         print('id：', product.get('pid', None))
         print('名称：', product.get('title', None))
-        print('图片：', 'http:' + product['img'])
+        print('图片：', product['img'])
         print('价格：', product.get('price', None))
         print('评论数：', product.get('commit', None))
         print('店铺：', product.get('shop', None))
