@@ -15,10 +15,21 @@ from selenium.webdriver.support.wait import WebDriverWait
 from logging import getLogger
 
 
+options = webdriver.ChromeOptions()
+options.add_argument('headless')
+
+
 class JdSpiderSeleniumMiddleware(object):
+    """
+    自定义下载器中间件，当spider发起request时，由该中间件处理，
+    使用selenium爬取页面内容后，返回给spider的parse方法处理
+    当是第一页的时候，模拟搜索关键词，搜索内容，并将内容返回
+    当不是第一页时，模拟翻页，并将内容返回
+    """
     def __init__(self):
         self.logger = getLogger(__name__)
-        self.driver = webdriver.Chrome()
+        self.driver = webdriver.Chrome(chrome_options=options)
+        self.driver.set_window_size(1200, 1400)
         self.wait = WebDriverWait(self.driver, 15)
 
     def __del__(self):

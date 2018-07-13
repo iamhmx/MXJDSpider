@@ -9,6 +9,9 @@ from scrapy.exceptions import DropItem
 
 
 class JdMongoDBPipeline(object):
+    """
+    当spider获取到item后，交到这里处理入库
+    """
     def __init__(self, host, port, db, collection):
         self.host = host
         self.port = port
@@ -32,6 +35,12 @@ class JdMongoDBPipeline(object):
         )
 
     def process_item(self, item, spider):
+        """
+        可以对item进行刷选、清理等操作
+        :param item: 爬取到的item
+        :param spider: 当前spider
+        :return: item
+        """
         if item['price'] is None:
             return DropItem('价格为None，丢弃')
         self.db[self.collection].insert(dict(item))

@@ -4,14 +4,16 @@ from ..items import JdItem
 import re
 
 
-class JD_spider(Spider):
+class JDSpider(Spider):
     name = 'jd'
-    base_url = 'https://www.jd.com'
     page_count = -1
     current_page_no = 1
 
     def start_requests(self):
-        yield Request(self.base_url, callback=self.parse, meta={'keyword': self.settings['KEYWORD'], 'page': self.current_page_no}, dont_filter=True)
+        yield Request(self.settings['BASE_URL'],
+                      callback=self.parse,
+                      meta={'keyword': self.settings['KEYWORD'], 'page': self.current_page_no},
+                      dont_filter=True)
 
     def parse(self, response):
         for p in response.css('.gl-i-wrap'):
@@ -43,4 +45,7 @@ class JD_spider(Spider):
         if self.current_page_no < self.page_count:
             self.current_page_no += 1
             print('i = ', self.current_page_no)
-            yield Request(self.base_url, callback=self.parse, meta={'keyword': '空气净化器', 'page': self.current_page_no}, dont_filter=True)
+            yield Request(self.settings['BASE_URL'],
+                          callback=self.parse,
+                          meta={'keyword': self.settings['KEYWORD'], 'page': self.current_page_no},
+                          dont_filter=True)

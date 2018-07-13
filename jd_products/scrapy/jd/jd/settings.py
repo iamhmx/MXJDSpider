@@ -89,6 +89,9 @@ ITEM_PIPELINES = {
 #HTTPCACHE_IGNORE_HTTP_CODES = []
 #HTTPCACHE_STORAGE = 'scrapy.extensions.httpcache.FilesystemCacheStorage'
 
+# Host
+BASE_URL = 'https://www.jd.com'
+
 # Keyword
 KEYWORD = '扫地机器人'
 
