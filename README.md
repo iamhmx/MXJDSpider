@@ -9,6 +9,7 @@ brew install mongodb
 * *selenium >= 3.11.0*
 * *Beautiful Soup >= 4.6.0*
 * *pymongo >= 3.4.0*
+* *scrapy >= 1.5.0*
 
 ## 工作
 * 使用selenium驱动无界面浏览器获取网页信息
@@ -19,12 +20,20 @@ brew install mongodb
 ```
 git clone git@github.com:iamhmx/MXJDSpider.git
 ```
+* 普通方式
+
 ```
-cd MXJDSpider
-```
-```
+cd MXJDSpider/jd_products
 python jd_spider.py
 ```
+
+* scrapy
+
+```
+cd MXJDSpider/jd_products/scrapy/jd
+scrapy crawl jd
+```
+
 ## 效果
 ![运行](https://github.com/iamhmx/MXJDSpider/blob/master/screenshots/result.png?raw=true)
 
